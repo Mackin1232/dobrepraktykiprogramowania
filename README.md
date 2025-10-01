@@ -1,2 +1,2 @@
-# dobrepraktykiprogramowania
+# Dobre praktyki programowania
 test
