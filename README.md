@@ -1,2 +1,3 @@
 # Dobre praktyki programowania
-test
+
+test czy działa integracja
