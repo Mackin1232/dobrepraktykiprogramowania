@@ -1,0 +1,75 @@
+import string
+import math
+
+
+
+def is_palindrome(text: str) -> bool:
+    text = text.lower().replace(" ","")
+    reversed = text[::-1]
+    if reversed == text:
+        return True
+    return False
+
+
+def fibonacci(n: int) -> int:
+    if n < 0:
+        raise ValueError("Podaj nieujemną liczbę")
+    if n == 0:
+        return 0
+    if n == 1:
+        return 1
+    return fibonacci(n - 2) + fibonacci(n - 1)
+
+
+def count_vowels(text: str) -> int:
+    counter = 0
+    vowels = ["a", "e", "i", "o", "u", "y", "ą", "ę", "ó"]
+    text = text.lower()
+    for letter in text:
+        if letter in vowels:
+            counter += 1
+    return counter
+
+
+def calculate_discount(price: float, discount: float) -> float:
+    if discount < 0 or discount > 1:
+        raise ValueError("Zniżka powinna się mieścić w zakresie 0-1")
+    return price - (price*discount)
+
+
+def flatten_list(nested_list: list) -> list:
+    flattened = []
+    for element in nested_list:
+        if isinstance(element,list):
+            for el in flatten_list(element):
+                flattened.append(el)
+        else:
+            flattened.append(element)
+    return flattened
+
+
+def word_frequencies(text: str) -> dict:
+    if text == "":
+        return {}
+    punctuation = set(string.punctuation)
+    text = text.lower()
+    text = "".join(ch for ch in text if ch not in punctuation)
+    words = text.split(" ")
+    words_dict = dict()
+    for word in words:
+        if word in words_dict:
+            words_dict[word] += 1
+        else:
+            words_dict[word] = 1
+    return words_dict
+
+def is_prime (n: int) -> bool:
+    if n < 2:
+        return False
+    else:
+        is_prime = True
+        for i in range (2,int(math.sqrt(n)) + 1):
+            if n % i == 0:
+                is_prime = False
+                break
+        return is_prime
