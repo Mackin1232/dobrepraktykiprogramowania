@@ -1,3 +1,5 @@
 # Dobre praktyki programowania
 
-test czy działa integracja
+testy jednostkowe - wystarczy uruchomić plik testy.py
+
+
