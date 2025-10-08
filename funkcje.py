@@ -2,7 +2,9 @@ import string
 
 
 def is_palindrome(text: str) -> bool:
-    if reversed(text) == text:
+    text = text.lower().replace(" ","")
+    reversed = text[::-1]
+    if reversed == text:
         return True
     return False
 
@@ -17,7 +19,7 @@ def fibonacci(n: int) -> int:
 
 def count_vowels(text: str) -> int:
     counter = 0
-    vowels = ["a", "e", "i", "o", "u", "y"]
+    vowels = ["a", "e", "i", "o", "u", "y", "ą", "ę", "ó"]
     text = text.lower()
     for letter in text:
         if letter in vowels:
