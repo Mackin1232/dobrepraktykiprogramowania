@@ -1,3 +1,3 @@
 # Dobre praktyki programowania
 
-test czy działa integracja
+create_db.py i api_movies.py są starymi wersjami main.py - nie uruchamiać!
