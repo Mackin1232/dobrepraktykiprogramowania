@@ -176,7 +176,7 @@ app = FastAPI()
 
 @app.get("/movies/")
 def get_movies(db: Session = Depends(get_db)):
-    movies = db.scalars(select(Movie)).unique().all()
+    movies = db.scalars(select(Movie).where(Movie.movieId.in_([1,2,3,4,5]))).unique().all()
     return [m.to_dict() for m in movies]
 
 @app.get("/links/")
@@ -195,4 +195,5 @@ def get_ratings(db: Session = Depends(get_db)):
 def get_tags(db: Session = Depends(get_db)):
     tags = db.scalars(select(Tag)).all()
     return [t.to_dict() for t in tags]
+
 
