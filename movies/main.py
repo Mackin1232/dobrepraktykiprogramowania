@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from models.db_init import engine, SessionLocal, Base
@@ -6,8 +6,10 @@ from models.movie import Movie
 from models.link import Link
 from models.rating import Rating
 from models.tag import Tag
+from models.user import User
 from load_data import init_data
-
+from auth.login_auth import LoginData, login
+from fastapi.testclient import TestClient
 
 Base.metadata.create_all(bind=engine)
 
@@ -49,5 +51,25 @@ def get_tags(db: Session = Depends(get_db)):
     tags = db.scalars(select(Tag)).all()
     return [t.to_dict() for t in tags]
 
+@app.post("/login")
+def post_login(data: LoginData, db: Session = Depends(get_db)):
+    user = db.scalars(select(User).where(User.username.like(data.username))).first()
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    else:
+        return login(user, data.password)
+
+
+client = TestClient(app)
+def test_post():
+    data = {
+        "username": "admin",
+        "password": "admin123"
+    }
+    response = client.post("/login", json=data)
+    print(response.json())
+
+
+test_post()
 #Base.metadata.drop_all(bind=engine)
 

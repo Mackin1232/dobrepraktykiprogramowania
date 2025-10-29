@@ -4,6 +4,8 @@ from models.movie import Movie
 from models.link import Link
 from models.rating import Rating
 from models.tag import Tag
+from models.user import User
+import bcrypt
 
 
 def init_data(session: Session):
@@ -63,3 +65,9 @@ def init_data(session: Session):
             print("Loaded tags.csv")
         except FileNotFoundError:
             print("tags.csv not found.")
+
+    if session.query(User).count() == 0:
+        admin = User(username="admin", password=bcrypt.hashpw(b"admin123", bcrypt.gensalt()))
+        session.add(admin)
+        session.commit()
+        print("Loaded users")
