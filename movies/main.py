@@ -10,6 +10,7 @@ from models.user import User
 from load_data import init_data
 from auth.login_auth import LoginData, login
 from fastapi.testclient import TestClient
+import bcrypt
 
 Base.metadata.create_all(bind=engine)
 
@@ -51,6 +52,11 @@ def get_tags(db: Session = Depends(get_db)):
     tags = db.scalars(select(Tag)).all()
     return [t.to_dict() for t in tags]
 
+@app.get("/userlist")
+def get_users(db: Session = Depends(get_db)):
+    users = db.scalars(select(User)).all()
+    return [u.to_dict() for u in users]
+
 @app.post("/login")
 def post_login(data: LoginData, db: Session = Depends(get_db)):
     user = db.scalars(select(User).where(User.username.like(data.username))).first()
@@ -58,7 +64,20 @@ def post_login(data: LoginData, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     else:
         return login(user, data.password)
-
+    
+@app.post("/users")
+def add_user(data: LoginData, db: Session = Depends(get_db)):
+    if data.username is None:
+        raise HTTPException(status_code=401, detail="Empty username")
+    if data.password is None:
+        raise HTTPException(status_code=401, detail="Empty password")
+    if db.scalars(select(User).where(User.username.like(data.username))).first() is not None:
+        raise HTTPException(status_code=401, detail="User already exists")
+    user = User(username=data.username, password=bcrypt.hashpw(data.password.encode(), bcrypt.gensalt()))
+    session.add(user)
+    session.commit()
+    return {"detail": "Added user"}
+    
 
 client = TestClient(app)
 def test_post():
@@ -66,6 +85,15 @@ def test_post():
         "username": "admin",
         "password": "admin123"
     }
+    response = client.post("/login", json=data)
+    print(response.json())
+
+    data = {
+        "username": "Mackin",
+        "password": "123"
+    }
+    response = client.post("/users", json=data)
+    print(response.json())
     response = client.post("/login", json=data)
     print(response.json())
 
