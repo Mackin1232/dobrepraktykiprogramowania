@@ -10,6 +10,7 @@ from models.user import User
 from load_data import init_data
 from auth.login_auth import LoginData, login
 from fastapi.testclient import TestClient
+from auth.dependencies import verify_token
 import bcrypt
 
 Base.metadata.create_all(bind=engine)
@@ -29,31 +30,35 @@ with SessionLocal() as session:
 
 app = FastAPI()
 
+@app.get("/")
+def hello(username: str = Depends(verify_token)):
+    return {"hello": "world"}
+
 @app.get("/movies/")
-def get_movies(db: Session = Depends(get_db)):
+def get_movies(db: Session = Depends(get_db), username: str = Depends(verify_token)):
     #movies = db.scalars(select(Movie).where(Movie.movieId.in_([1,2,3,4,5]))).unique().all()
     movies = db.scalars(select(Movie)).unique().all()
     return [m.to_dict() for m in movies]
 
 @app.get("/links/")
-def get_links(db: Session = Depends(get_db)):
+def get_links(db: Session = Depends(get_db), username: str = Depends(verify_token)):
     links = db.scalars(select(Link)).unique().all()
     return [l.to_dict() for l in links]
 
 
 @app.get("/ratings/")
-def get_ratings(db: Session = Depends(get_db)):
+def get_ratings(db: Session = Depends(get_db), username: str = Depends(verify_token)):
     ratings = db.scalars(select(Rating)).all()
     return [r.to_dict() for r in ratings]
 
 
 @app.get("/tags/")
-def get_tags(db: Session = Depends(get_db)):
+def get_tags(db: Session = Depends(get_db), username: str = Depends(verify_token)):
     tags = db.scalars(select(Tag)).all()
     return [t.to_dict() for t in tags]
 
 @app.get("/userlist")
-def get_users(db: Session = Depends(get_db)):
+def get_users(db: Session = Depends(get_db), username: str = Depends(verify_token)):
     users = db.scalars(select(User)).all()
     return [u.to_dict() for u in users]
 
@@ -81,23 +86,43 @@ def add_user(data: LoginData, db: Session = Depends(get_db)):
 
 client = TestClient(app)
 def test_post():
+    # test utworzenia bd users
     data = {
         "username": "admin",
         "password": "admin123"
     }
     response = client.post("/login", json=data)
     print(response.json())
-
+    
+    # test dodania użytkownika
     data = {
         "username": "Mackin",
         "password": "123"
     }
     response = client.post("/users", json=data)
     print(response.json())
-    response = client.post("/login", json=data)
-    print(response.json())
+
+    # test autoryzacji loginu
+    response_token = client.post("/login", json=data)
+    if "access_token" in response_token.json().keys():
+        response = client.get("/", headers={"Authorization": f"Bearer {response_token.json()["access_token"]}"})
+        print(response.json()) # zwraca hello world
+    else:
+        print(response_token.json())
+
+    ## dla złego hasła
+    data = {
+        "username": "Mackin",
+        "password": "1234"
+    }
+    response_token = client.post("/login", json=data)
+    if "access_token" in response_token.json().keys():
+        response = client.get("/", headers={"Authorization": f"Bearer {response_token.json()["access_token"]}"})
+        print(response.json())
+    else:
+        print(response_token.json()) # invalid credentials
 
 
-test_post()
+#test_post()
 #Base.metadata.drop_all(bind=engine)
 
