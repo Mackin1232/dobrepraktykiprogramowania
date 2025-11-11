@@ -67,7 +67,7 @@ def init_data(session: Session):
             print("tags.csv not found.")
 
     if session.query(User).count() == 0:
-        admin = User(username="admin", password=bcrypt.hashpw(b"admin123", bcrypt.gensalt()))
+        admin = User(username="admin", password=bcrypt.hashpw(b"admin123", bcrypt.gensalt()), role="ROLE_ADMIN")
         session.add(admin)
         session.commit()
         print("Loaded users")

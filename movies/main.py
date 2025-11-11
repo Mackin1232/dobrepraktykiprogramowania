@@ -13,6 +13,7 @@ from fastapi.testclient import TestClient
 from auth.dependencies import verify_token
 import bcrypt
 
+Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
 
 
@@ -28,37 +29,38 @@ with SessionLocal() as session:
     init_data(session)
 
 
+
 app = FastAPI()
 
 @app.get("/")
-def hello(username: str = Depends(verify_token)):
+def hello(user: dict = Depends(verify_token)):
     return {"hello": "world"}
 
 @app.get("/movies/")
-def get_movies(db: Session = Depends(get_db), username: str = Depends(verify_token)):
+def get_movies(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     #movies = db.scalars(select(Movie).where(Movie.movieId.in_([1,2,3,4,5]))).unique().all()
     movies = db.scalars(select(Movie)).unique().all()
     return [m.to_dict() for m in movies]
 
 @app.get("/links/")
-def get_links(db: Session = Depends(get_db), username: str = Depends(verify_token)):
+def get_links(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     links = db.scalars(select(Link)).unique().all()
     return [l.to_dict() for l in links]
 
 
 @app.get("/ratings/")
-def get_ratings(db: Session = Depends(get_db), username: str = Depends(verify_token)):
+def get_ratings(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     ratings = db.scalars(select(Rating)).all()
     return [r.to_dict() for r in ratings]
 
 
 @app.get("/tags/")
-def get_tags(db: Session = Depends(get_db), username: str = Depends(verify_token)):
+def get_tags(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     tags = db.scalars(select(Tag)).all()
     return [t.to_dict() for t in tags]
 
 @app.get("/userlist")
-def get_users(db: Session = Depends(get_db), username: str = Depends(verify_token)):
+def get_users(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     users = db.scalars(select(User)).all()
     return [u.to_dict() for u in users]
 
@@ -71,7 +73,9 @@ def post_login(data: LoginData, db: Session = Depends(get_db)):
         return login(user, data.password)
     
 @app.post("/users")
-def add_user(data: LoginData, db: Session = Depends(get_db)):
+def add_user(data: LoginData, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    if user["role"] != "ROLE_ADMIN":
+        raise HTTPException(status_code=401, detail="Access denied")
     if data.username is None:
         raise HTTPException(status_code=401, detail="Empty username")
     if data.password is None:
@@ -82,6 +86,11 @@ def add_user(data: LoginData, db: Session = Depends(get_db)):
     session.add(user)
     session.commit()
     return {"detail": "Added user"}
+
+@app.get("/user_details")
+def get_user_details(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    user_db = db.scalars(select(User).where(User.username.like(user["username"]))).first()
+    return user_db.to_dict()
     
 
 client = TestClient(app)
@@ -89,20 +98,39 @@ def test_post():
     # test utworzenia bd users
     data = {
         "username": "admin",
-        "password": "admin123"
+        "password": "admin123",
     }
     response = client.post("/login", json=data)
     print(response.json())
     
-    # test dodania użytkownika
+    # test dodania użytkownika - poprawnie
     data = {
         "username": "Mackin",
-        "password": "123"
+        "password": "123",
     }
-    response = client.post("/users", json=data)
+    response = client.post("/users", json=data,headers={"Authorization": f"Bearer {response.json()["access_token"]}"})
+    print(response.json())
+    
+
+    # test dodania użytkownika - niepoprawnie
+    data = {
+        "username": "Mackin",
+        "password": "123",
+    }
+    response_token = client.post("/login", json=data)
+    data = {
+        "username": "test",
+        "password": "1234"
+    }
+    response = client.post("/users", json=data,headers={"Authorization": f"Bearer {response_token.json()["access_token"]}"})
     print(response.json())
 
+
     # test autoryzacji loginu
+    data = {
+        "username": "admin",
+        "password": "admin123",
+    }
     response_token = client.post("/login", json=data)
     if "access_token" in response_token.json().keys():
         response = client.get("/", headers={"Authorization": f"Bearer {response_token.json()["access_token"]}"})
@@ -121,8 +149,18 @@ def test_post():
         print(response.json())
     else:
         print(response_token.json()) # invalid credentials
+    
+    # user details
+    data = {
+        "username": "admin",
+        "password": "admin123",
+    }
+    response_token = client.post("/login", json=data)
+    response = client.get("/user_details", headers={"Authorization": f"Bearer {response_token.json()["access_token"]}"})
+    print(response.json())
 
 
-#test_post()
+
+test_post()
 #Base.metadata.drop_all(bind=engine)
 

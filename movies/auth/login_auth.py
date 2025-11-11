@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import HTTPException
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 import jwt
@@ -27,7 +27,8 @@ def login(user: User, password):
     payload = {
         "sub": username,
         "iat": datetime.utcnow(),
-        "exp": datetime.utcnow() + timedelta(hours=1)
+        "exp": datetime.utcnow() + timedelta(hours=1),
+        "role": user['role']
         }
 
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)

@@ -1,6 +1,5 @@
-from typing import List, Optional
-from sqlalchemy import String, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column
 from models.db_init import Base
 
 
@@ -9,9 +8,11 @@ class User(Base):
 
     username: Mapped[str] = mapped_column(String, primary_key=True)
     password: Mapped[str] = mapped_column(String)
+    role: Mapped[str] = mapped_column(String, default="ROLE_USER")
 
     def to_dict(self):
         return {
             "username": self.username,
-            "password": self.password
+            "password": self.password,
+            "role": self.role
         }
