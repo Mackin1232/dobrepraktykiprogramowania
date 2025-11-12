@@ -70,4 +70,8 @@ def init_data(session: Session):
         admin = User(username="admin", password=bcrypt.hashpw(b"admin123", bcrypt.gensalt()), role="ROLE_ADMIN")
         session.add(admin)
         session.commit()
+
+        user = User(username="Mackin", password=bcrypt.hashpw(b"123", bcrypt.gensalt()))
+        session.add(user)
+        session.commit()
         print("Loaded users")

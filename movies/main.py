@@ -9,11 +9,11 @@ from models.tag import Tag
 from models.user import User
 from load_data import init_data
 from auth.login_auth import LoginData, login
-from fastapi.testclient import TestClient
 from auth.dependencies import verify_token
+from fastapi.testclient import TestClient
 import bcrypt
 
-Base.metadata.drop_all(bind=engine)
+#Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
 
 
@@ -91,8 +91,15 @@ def add_user(data: LoginData, db: Session = Depends(get_db), user: dict = Depend
 def get_user_details(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     user_db = db.scalars(select(User).where(User.username.like(user["username"]))).first()
     return user_db.to_dict()
-    
 
+
+
+
+
+
+
+
+'''
 client = TestClient(app)
 def test_post():
     # test utworzenia bd users
@@ -108,7 +115,7 @@ def test_post():
         "username": "Mackin",
         "password": "123",
     }
-    response = client.post("/users", json=data,headers={"Authorization": f"Bearer {response.json()["access_token"]}"})
+    response = client.post("/users", json=data,headers={"Authorization": f"Bearer {response.json()['access_token']}"})
     print(response.json())
     
 
@@ -122,7 +129,7 @@ def test_post():
         "username": "test",
         "password": "1234"
     }
-    response = client.post("/users", json=data,headers={"Authorization": f"Bearer {response_token.json()["access_token"]}"})
+    response = client.post("/users", json=data,headers={"Authorization": f"Bearer {response_token.json()['access_token']}"})
     print(response.json())
 
 
@@ -133,7 +140,7 @@ def test_post():
     }
     response_token = client.post("/login", json=data)
     if "access_token" in response_token.json().keys():
-        response = client.get("/", headers={"Authorization": f"Bearer {response_token.json()["access_token"]}"})
+        response = client.get("/", headers={"Authorization": f"Bearer {response_token.json()['access_token']}"})
         print(response.json()) # zwraca hello world
     else:
         print(response_token.json())
@@ -145,7 +152,7 @@ def test_post():
     }
     response_token = client.post("/login", json=data)
     if "access_token" in response_token.json().keys():
-        response = client.get("/", headers={"Authorization": f"Bearer {response_token.json()["access_token"]}"})
+        response = client.get("/", headers={"Authorization": f"Bearer {response_token.json()['access_token']}"})
         print(response.json())
     else:
         print(response_token.json()) # invalid credentials
@@ -156,11 +163,10 @@ def test_post():
         "password": "admin123",
     }
     response_token = client.post("/login", json=data)
-    response = client.get("/user_details", headers={"Authorization": f"Bearer {response_token.json()["access_token"]}"})
+    response = client.get("/user_details", headers={"Authorization": f"Bearer {response_token.json()['access_token'] }"})
     print(response.json())
 
 
 
 test_post()
-#Base.metadata.drop_all(bind=engine)
-
+'''
