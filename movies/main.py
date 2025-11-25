@@ -8,12 +8,12 @@ from models.rating import Rating
 from models.tag import Tag
 from models.user import User
 from load_data import init_data
-from auth.login_auth import LoginData, login
-from auth.dependencies import verify_token
+from auth.create_token import LoginData, login
+from auth.login_token import verify_token
 from fastapi.testclient import TestClient
 import bcrypt
 
-#Base.metadata.drop_all(bind=engine)
+Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
 
 
@@ -93,80 +93,3 @@ def get_user_details(db: Session = Depends(get_db), user: dict = Depends(verify_
     return user_db.to_dict()
 
 
-
-
-
-
-
-
-'''
-client = TestClient(app)
-def test_post():
-    # test utworzenia bd users
-    data = {
-        "username": "admin",
-        "password": "admin123",
-    }
-    response = client.post("/login", json=data)
-    print(response.json())
-    
-    # test dodania użytkownika - poprawnie
-    data = {
-        "username": "Mackin",
-        "password": "123",
-    }
-    response = client.post("/users", json=data,headers={"Authorization": f"Bearer {response.json()['access_token']}"})
-    print(response.json())
-    
-
-    # test dodania użytkownika - niepoprawnie
-    data = {
-        "username": "Mackin",
-        "password": "123",
-    }
-    response_token = client.post("/login", json=data)
-    data = {
-        "username": "test",
-        "password": "1234"
-    }
-    response = client.post("/users", json=data,headers={"Authorization": f"Bearer {response_token.json()['access_token']}"})
-    print(response.json())
-
-
-    # test autoryzacji loginu
-    data = {
-        "username": "admin",
-        "password": "admin123",
-    }
-    response_token = client.post("/login", json=data)
-    if "access_token" in response_token.json().keys():
-        response = client.get("/", headers={"Authorization": f"Bearer {response_token.json()['access_token']}"})
-        print(response.json()) # zwraca hello world
-    else:
-        print(response_token.json())
-
-    ## dla złego hasła
-    data = {
-        "username": "Mackin",
-        "password": "1234"
-    }
-    response_token = client.post("/login", json=data)
-    if "access_token" in response_token.json().keys():
-        response = client.get("/", headers={"Authorization": f"Bearer {response_token.json()['access_token']}"})
-        print(response.json())
-    else:
-        print(response_token.json()) # invalid credentials
-    
-    # user details
-    data = {
-        "username": "admin",
-        "password": "admin123",
-    }
-    response_token = client.post("/login", json=data)
-    response = client.get("/user_details", headers={"Authorization": f"Bearer {response_token.json()['access_token'] }"})
-    print(response.json())
-
-
-
-test_post()
-'''

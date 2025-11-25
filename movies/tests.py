@@ -1,5 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
+from auth.login_token import verify_token
 from main import app
 
 client = TestClient(app)
@@ -30,6 +31,9 @@ class TestClass:
     def test_login_success(self):
         response = client.post("/login", json=admin)
         assert "access_token" in response.json().keys()
+        user = verify_token(response.json["access_token"]) 
+        assert user['username'] == admin["username"]
+        assert user['role'] == "ROLE_ADMIN"
 
     def test_login_failure(self):
         response = client.post("/login", json=fail)
@@ -41,6 +45,9 @@ class TestClass:
 
         login_response = client.post("/login", json=newuser)
         assert "access_token" in login_response.json().keys()
+        user = verify_token(login_response.json["access_token"]) 
+        assert user['username'] == newuser["username"]
+        assert user['role'] == "ROLE_USER"
 
     def test_adduser_fail(self):
         token = client.post("/login", json=olduser).json()['access_token']

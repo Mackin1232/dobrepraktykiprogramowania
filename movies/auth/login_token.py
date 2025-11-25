@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import jwt
-from auth.login_auth import SECRET_KEY, ALGORITHM
+from auth.create_token import SECRET_KEY, ALGORITHM
 
 security = HTTPBearer()
 
