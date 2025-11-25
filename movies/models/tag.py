@@ -2,6 +2,13 @@ from typing import List, Optional
 from sqlalchemy import String, ForeignKey, Integer, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from models.db_init import Base
+from pydantic import BaseModel
+
+class newTag(BaseModel):
+    userId: int
+    movieId: int
+    tag: str
+    timestamp: int
 
 class Tag(Base):
     __tablename__ = "tags"

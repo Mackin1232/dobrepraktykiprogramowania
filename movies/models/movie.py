@@ -2,6 +2,12 @@ from typing import List, Optional
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from models.db_init import Base
+from pydantic import BaseModel
+
+class newMovie(BaseModel):
+    movieId: Optional[int] = None
+    title: Optional[str] = None
+    genres: Optional[str] = None
 
 class Movie(Base):
     __tablename__ = "movies"

@@ -2,6 +2,12 @@ from typing import List, Optional
 from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from models.db_init import Base
+from pydantic import BaseModel
+
+class newLink(BaseModel):
+    movieId: int
+    imdbId: Optional[str] = None
+    tmdbId: Optional[str] = None
 
 class Link(Base):
     __tablename__ = "links"

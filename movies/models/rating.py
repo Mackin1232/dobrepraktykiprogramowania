@@ -2,6 +2,12 @@ from typing import List, Optional
 from sqlalchemy import String, ForeignKey, Integer, Float
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from models.db_init import Base
+from pydantic import BaseModel
+
+class newRating(BaseModel):
+    userId: int
+    movieId: int
+    rating: float
 
 class Rating(Base):
     __tablename__ = "ratings"
