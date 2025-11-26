@@ -38,7 +38,6 @@ def hello(user: dict = Depends(verify_token)):
 
 @app.get("/movies/")
 def get_movies(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
-    #movies = db.scalars(select(Movie).where(Movie.movieId.in_([1,2,3,4,5]))).unique().all()
     movies = db.scalars(select(Movie)).unique().all()
     return [m.to_dict() for m in movies]
 
@@ -98,16 +97,183 @@ def get_links(db: Session = Depends(get_db), user: dict = Depends(verify_token))
     return [l.to_dict() for l in links]
 
 
+@app.post("/links/")
+def post_link(newlink: newLink, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    if user["role"] != "ROLE_ADMIN":
+        raise HTTPException(status_code=401, detail="Access denied")
+    if newlink.linkId is not None:
+        link = Link(linkId=newlink.linkId, movieId=newlink.movieId, imdbId=newlink.imdbId, tmdbId=newlink.tmdbId)
+    else:
+        link = Link(movieId=newlink.movieId, imdbId=newlink.imdbId, tmdbId=newlink.tmdbId)
+    db.add(link)
+    db.commit()
+    return {"detail": f"Added link for movie {newlink.movieId}"}
+
+
+@app.get("/links/{link_id}")
+def get_link(link_id: int, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    link = db.scalar(select(Link).where(Link.linkId == link_id))
+    if link is None:
+        raise HTTPException(status_code=404, detail="Link not found")
+    return link.to_dict()
+
+
+@app.put("/links/{link_id}")
+def update_link(link_id: int, link_details: newLink, db: Session = Depends(get_db),
+                 user: dict = Depends(verify_token)):
+    if user["role"] != "ROLE_ADMIN":
+        raise HTTPException(status_code=401, detail="Access denied")
+    link = db.scalar(select(Link).where(Link.linkId == link_id))
+    if link is None:
+        raise HTTPException(status_code=404, detail="Link not found")
+
+    if link_details.linkId is not None:
+        link.linkId = link_details.linkId
+    if link_details.movieId is not None:
+        link.movieId = link_details.movieId
+    if link_details.imdbId is not None:
+        link.imdbId = link_details.imdbId
+    if link_details.tmdbId is not None:
+        link.tmdbId = link_details.tmdbId
+    db.commit()
+    db.refresh(link)
+    return {"detail": f"Updated link {link_id}"}
+
+
+@app.delete("/links/{link_id}")
+def delete_link(link_id: int, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    if user["role"] != "ROLE_ADMIN":
+        raise HTTPException(status_code=401, detail="Access denied")
+    link = db.scalar(select(Link).where(Link.linkId == link_id))
+    if link is None:
+        raise HTTPException(status_code=404, detail="Link not found")
+    db.delete(link)
+    db.commit()
+    return {"detail": f"Deleted link {link_id}"}
+
+
 @app.get("/ratings/")
 def get_ratings(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     ratings = db.scalars(select(Rating)).all()
     return [r.to_dict() for r in ratings]
+
+@app.post("/ratings/")
+def post_rating(newrating: newRating, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    if user["role"] != "ROLE_ADMIN":
+        raise HTTPException(status_code=401, detail="Access denied")
+    if newrating.ratingId is not None:
+        rating = Rating(ratingId=newrating.ratingId, userId=newrating.userId, movieId=newrating.movieId, rating=newrating.rating, timestamp=newrating.timestamp)
+    else:
+        rating = Rating(userId=newrating.userId, movieId=newrating.movieId, rating=newrating.rating, timestamp=newrating.timestamp)
+    db.add(rating)
+    db.commit()
+    return {"detail": f"Added rating for movie {newrating.movieId}"}
+
+
+@app.get("/ratings/{rating_id}")
+def get_rating(rating_id: int, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    rating = db.scalar(select(Rating).where(Rating.ratingId == rating_id))
+    if rating is None:
+        raise HTTPException(status_code=404, detail="Rating not found")
+    return rating.to_dict()
+
+
+@app.put("/ratings/{rating_id}")
+def update_rating(rating_id: int, rating_details: newRating, db: Session = Depends(get_db),
+                 user: dict = Depends(verify_token)):
+    if user["role"] != "ROLE_ADMIN":
+        raise HTTPException(status_code=401, detail="Access denied")
+    rating = db.scalar(select(Rating).where(Rating.ratingId == rating_id))
+    if rating is None:
+        raise HTTPException(status_code=404, detail="Rating not found")
+
+    if rating_details.ratingId is not None:
+        rating.ratingId = rating_details.ratingId
+    if rating_details.userId is not None:
+        rating.userId = rating_details.userId
+    if rating_details.movieId is not None:
+        rating.movieId = rating_details.movieId
+    if rating_details.rating is not None:
+        rating.rating = rating_details.rating
+    if rating_details.timestamp is not None:
+        rating.timestamp = rating_details.timestamp
+    db.commit()
+    db.refresh(rating)
+    return {"detail": f"Updated rating {rating_id}"}
+
+
+@app.delete("/ratings/{rating_id}")
+def delete_rating(rating_id: int, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    if user["role"] != "ROLE_ADMIN":
+        raise HTTPException(status_code=401, detail="Access denied")
+    rating = db.scalar(select(Rating).where(Rating.ratingId == rating_id))
+    if rating is None:
+        raise HTTPException(status_code=404, detail="Rating not found")
+    db.delete(rating)
+    db.commit()
+    return {"detail": f"Deleted rating {rating_id}"}
 
 
 @app.get("/tags/")
 def get_tags(db: Session = Depends(get_db), user: dict = Depends(verify_token)):
     tags = db.scalars(select(Tag)).all()
     return [t.to_dict() for t in tags]
+
+@app.post("/tags/")
+def post_tag(newtag: newTag, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    if user["role"] != "ROLE_ADMIN":
+        raise HTTPException(status_code=401, detail="Access denied")
+    if newtag.tagId is not None:
+        tag = Tag(tagId=newtag.tagId, userId=newtag.userId, movieId=newtag.movieId, tag=newtag.tag, timestamp=newtag.timestamp)
+    else:
+        tag = Tag(userId=newtag.userId, movieId=newtag.movieId, tag=newtag.tag, timestamp=newtag.timestamp)
+    db.add(tag)
+    db.commit()
+    return {"detail": f"Added tag for movie {newtag.movieId}"}
+
+
+@app.get("/tags/{tag_id}")
+def get_tag(tag_id: int, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    tag = db.scalar(select(Tag).where(Tag.tagId == tag_id))
+    if tag is None:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    return tag.to_dict()
+
+
+@app.put("/tag/{tag_id}")
+def update_movie(tag_id: int, tag_details: newTag, db: Session = Depends(get_db),
+                 user: dict = Depends(verify_token)):
+    if user["role"] != "ROLE_ADMIN":
+        raise HTTPException(status_code=401, detail="Access denied")
+    tag = db.scalar(select(Tag).where(Tag.tagId == tag_id))
+    if tag is None:
+        raise HTTPException(status_code=404, detail="Tag not found")
+
+    if tag_details.tagId is not None:
+        tag.tagId = tag_details.tagId
+    if tag_details.userId is not None:
+        tag.userId = tag_details.userId
+    if tag_details.movieId is not None:
+        tag.movieId = tag_details.movieId
+    if tag_details.tag is not None:
+        tag.tag = tag_details.tag
+    if tag_details.timestamp is not None:
+        tag.timestamp = tag_details.timestamp
+    db.commit()
+    db.refresh(tag)
+    return {"detail": f"Updated tag {tag_id}"}
+
+
+@app.delete("/tag/{tag_id}")
+def delete_tag(tag_id: int, db: Session = Depends(get_db), user: dict = Depends(verify_token)):
+    if user["role"] != "ROLE_ADMIN":
+        raise HTTPException(status_code=401, detail="Access denied")
+    tag = db.scalar(select(Tag).where(Tag.tagId == tag_id))
+    if tag is None:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    db.delete(tag)
+    db.commit()
+    return {"detail": f"Deleted tag {tag_id}"}
 
 @app.get("/userlist")
 def get_users(db: Session = Depends(get_db), user: dict = Depends(verify_token)):

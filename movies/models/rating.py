@@ -5,9 +5,11 @@ from models.db_init import Base
 from pydantic import BaseModel
 
 class newRating(BaseModel):
-    userId: int
-    movieId: int
-    rating: float
+    ratingId: Optional[int] = None
+    userId:  Optional[int] = None
+    movieId:  Optional[int] = None
+    rating:  Optional[float] = None
+    timestamp: Optional[int] = None
 
 class Rating(Base):
     __tablename__ = "ratings"

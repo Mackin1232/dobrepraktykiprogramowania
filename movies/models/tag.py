@@ -5,10 +5,11 @@ from models.db_init import Base
 from pydantic import BaseModel
 
 class newTag(BaseModel):
-    userId: int
-    movieId: int
-    tag: str
-    timestamp: int
+    tagId: Optional[int] = None
+    userId:  Optional[int] = None
+    movieId:  Optional[int] = None
+    tag:  Optional[str] = None
+    timestamp:  Optional[int] = None
 
 class Tag(Base):
     __tablename__ = "tags"

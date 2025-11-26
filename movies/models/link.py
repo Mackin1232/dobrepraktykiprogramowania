@@ -5,7 +5,8 @@ from models.db_init import Base
 from pydantic import BaseModel
 
 class newLink(BaseModel):
-    movieId: int
+    linkId: Optional[int] = None
+    movieId: Optional[int] = None
     imdbId: Optional[str] = None
     tmdbId: Optional[str] = None
 
