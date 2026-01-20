@@ -1,3 +1,3 @@
 # Dobre praktyki programowania
 
-test czy działa integracja
+!!! Projekt został wykonany w Google Colab, może nie działać w innym środowisku !!!
