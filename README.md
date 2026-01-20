@@ -1,5 +1,6 @@
 # Dobre praktyki programowania
 
-testy jednostkowe - wystarczy uruchomić plik testy.py
+Zadanie 1.: testy jednostkowe
+wystarczy uruchomić plik testy.py
 
 
