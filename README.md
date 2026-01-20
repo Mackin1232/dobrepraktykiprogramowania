@@ -1,3 +1,5 @@
 # Dobre praktyki programowania
 
-zrefactorowana wersja znajduje się w katalogu movies
+Zadanie 4.: Uwierzytelnianie JWT, Endpointy CRUD, testy integracyjne
+
+katalog movies
