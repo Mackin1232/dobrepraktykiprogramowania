@@ -1,3 +1,5 @@
 # Dobre praktyki programowania
 
-zrefactorowana wersja znajduje się w katalogu movies
+Zadanie 6.: API + Kolejkowanie
+
+Mechanizm kolejki zawarty w katalogu consumer_worker
