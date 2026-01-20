@@ -1,3 +1,3 @@
 # Dobre praktyki programowania
 
-test czy działa integracja
+Zadanie 8.: Kolejkowanie na plikach
